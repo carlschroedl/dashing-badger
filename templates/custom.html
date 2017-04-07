@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>Dashing Badger</title>
+  </head>
+  <body>
+      <table>
+            <tr>
+                 <td>Name</td>
+                 <td>Description</td>
+                 <td>Travis</td>
+            </tr>
+         {% for repo in repos %}
+            <tr>
+               <td>{{ repo.name }}</td>
+               <td>{{ repo.description }}</td>
+               {% for badge in repo.badges %}
+                  <td><img alt="{{ badge.name }}" src="{{ badge.url }}"/></td>
+               {% endfor %}
+            </tr>
+         {% endfor %}
+      </table>
+  </body>
+</html>

@@ -1,4 +1,7 @@
-from flask import Flask, url_for
+from flask import Flask
+from flask import url_for
+from flask import jsonify
+from flask import render_template
 app = Flask(__name__)
 from github import Github
 from flask_table import Table, Col
@@ -20,19 +23,34 @@ class RepoTable(Table):
             direction =  'desc'
         else:
             direction = 'asc'
-        return url_for('index', sort=col_key, direction=direction)
+        return url_for('index_route', sort=col_key, direction=direction)
 
 @app.route('/')
-def index():
+def index_route():
     repos = get_repos()
-    transformed_repos = transform_repos(repos)
-    table_html = get_table_html(transformed_repos)
+    table_html = get_table_html(repos)
     return table_html 
+
+@app.route('/get_repos')
+def get_repos_route():
+    return jsonify(get_repos())
 
 def get_table_html(repos):
     repo_table = RepoTable(repos)
     return repo_table.__html__()
 
+@app.route('/custom.html')
+def get_custom_table_route():
+    repos = get_repos()
+    html = render_template('custom.html', repos=repos)
+    return html
+
+def travis_badger(repo):
+    return 'https://img.shields.io/travis/{}.svg'.format(repo.full_name)
+
+badgeToBadger = {
+	'Travis' : travis_badger
+}
 
 def transform_repos(repos):
     return map(transform_repo, repos)
@@ -40,12 +58,22 @@ def transform_repos(repos):
 #'
 #' @param repos - list of PyGithub Repository objects
 def transform_repo(repo):
-#    dict_repo = dict((key, value) for key, value in repo.__dict__.iteritems() 
-#        if not callable(value) and not key.startswith('__'))
-#    print(dir(dict_repo))
-    dict_repo = repo.__dict__
+    badges = []
+    for badge, badger in badgeToBadger.iteritems():
+        badge_url = badger(repo)
+        badges.append({
+            'name' : badge,
+            'url' : badge_url
+        })
+
+    dict_repo = {
+        'full_name' : repo.full_name,
+        'name' : repo.name,
+        'html_url' : repo.html_url,
+        'description' : repo.description,
+        'badges' : badges
+    }
     print(dict_repo)
-    exit()
     return dict_repo
 
 def get_repos():
@@ -57,7 +85,10 @@ def get_repos():
         print('cache miss, retrieving from github and writing to file ' + CACHED_FILE_NAME)
         f = open(CACHED_FILE_NAME, 'wb')
         repos = write_repos_to_file(f)
-    return repos
+    print len(repos)
+    transformed_repos = transform_repos(repos)
+
+    return transformed_repos
    
 def write_repos_to_file(the_file):
     g = Github()
