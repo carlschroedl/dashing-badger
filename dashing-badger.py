@@ -48,8 +48,12 @@ def index_route():
 def travis_badger(repo):
     return 'https://img.shields.io/travis/{}.svg'.format(repo.full_name)
 
+def coveralls_badger(repo):
+    return 'https://img.shields.io/coveralls/{}.svg'.format(repo.full_name)
+
 badgeToBadger = {
-	'Travis' : travis_badger
+	'Travis' : travis_badger,
+        'Coveralls': coveralls_badger
 }
 
 def transform_repos(repos):
