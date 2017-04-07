@@ -25,8 +25,8 @@ class RepoTable(Table):
             direction = 'asc'
         return url_for('index_route', sort=col_key, direction=direction)
 
-@app.route('/')
-def index_route():
+@app.route('/table_widget.html')
+def get_table__widget_route():
     repos = get_repos()
     table_html = get_table_html(repos)
     return table_html 
@@ -39,8 +39,8 @@ def get_table_html(repos):
     repo_table = RepoTable(repos)
     return repo_table.__html__()
 
-@app.route('/custom.html')
-def get_custom_table_route():
+@app.route('/')
+def index_route():
     repos = get_repos()
     html = render_template('custom.html', repos=repos)
     return html
